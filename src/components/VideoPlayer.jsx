@@ -31,7 +31,16 @@ export default function VideoPlayer({ uploadId }) {
         maxBufferLength: 10, // seconds
         maxMaxBufferLength: 20, // seconds
         maxBufferSize: 60 * 1000 * 1000, // 60MB
-        maxBufferHole: 0.3 // seconds
+        maxBufferHole: 0.3, // seconds
+        // Improve quality switching behavior
+        abrEwmaFastLive: 3.0,
+        abrEwmaSlowLive: 9.0,
+        abrEwmaFastVoD: 3.0,
+        abrEwmaSlowVoD: 9.0,
+        abrMaxWithRealBitrate: false,
+        // Allow immediate quality switches
+        startLevel: -1,
+        capLevelToPlayerSize: false
       });
       
       hlsRef.current = hls;
@@ -51,8 +60,18 @@ export default function VideoPlayer({ uploadId }) {
       });
       
       hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-        console.log('Level switched to:', data.level);
+        console.log('Level switched to:', data.level, 'Resolution:', levels[data.level]);
         setCurrentLevel(data.level);
+        
+        // Log current video dimensions for debugging
+        if (ref.current) {
+          console.log('Video element size:', {
+            videoWidth: ref.current.videoWidth,
+            videoHeight: ref.current.videoHeight,
+            elementWidth: ref.current.clientWidth,
+            elementHeight: ref.current.clientHeight
+          });
+        }
       });
       
       // Track buffer info for debugging
@@ -88,39 +107,27 @@ export default function VideoPlayer({ uploadId }) {
     if (hlsRef.current) {
       const hls = hlsRef.current;
       
-      // Set the new quality level
+      console.log('Quality change requested:', levelIndex, levels[levelIndex]?.name);
+      
+      // Force immediate quality switch
       hls.currentLevel = levelIndex;
       
-      // For immediate quality change, we can clear the buffer
-      // This causes a brief pause but ensures immediate switch
-      if (levelIndex !== -1 && ref.current) {
-        const currentTime = ref.current.currentTime;
-        // Clear future buffer to force immediate quality change
-        hls.trigger(Hls.Events.BUFFER_FLUSHING, {
-          startOffset: currentTime + 0.1, // Keep current segment
-          endOffset: Number.POSITIVE_INFINITY,
-          type: 'video'
-        });
+      // Also update nextLevel to ensure consistency
+      if (levelIndex === -1) {
+        hls.nextLevel = -1; // Auto mode
+      } else {
+        hls.nextLevel = levelIndex;
       }
       
+      // Update state immediately for UI feedback
       setCurrentLevel(levelIndex);
-    }
-  };
-
-  const handleForceQualityChange = (levelIndex) => {
-    if (hlsRef.current && ref.current) {
-      const hls = hlsRef.current;
-      const currentTime = ref.current.currentTime;
       
-      // More aggressive: clear all buffer for immediate switch
-      hls.trigger(Hls.Events.BUFFER_FLUSHING, {
-        startOffset: currentTime,
-        endOffset: Number.POSITIVE_INFINITY,
-        type: 'video'
+      // Log for debugging
+      console.log('HLS levels after change:', {
+        currentLevel: hls.currentLevel,
+        nextLevel: hls.nextLevel,
+        autoLevelEnabled: hls.autoLevelEnabled
       });
-      
-      hls.currentLevel = levelIndex;
-      setCurrentLevel(levelIndex);
     }
   };
 
@@ -160,13 +167,6 @@ export default function VideoPlayer({ uploadId }) {
                 ))}
               </select>
               
-              <button
-                onClick={() => handleForceQualityChange(currentLevel)}
-                className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
-                title="Force immediate quality switch (clears buffer)"
-              >
-                Force Switch
-              </button>
             </div>
             
             {/* Buffer and Quality Info */}
@@ -179,6 +179,11 @@ export default function VideoPlayer({ uploadId }) {
               <span>
                 Buffer: {bufferInfo.buffered.toFixed(1)}s
               </span>
+              {ref.current && (
+                <span>
+                  Video: {ref.current.videoWidth}x{ref.current.videoHeight}
+                </span>
+              )}
             </div>
           </div>
         )}
