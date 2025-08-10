@@ -83,9 +83,36 @@ export default function VideoList({ onPlay }) {
       {videos.map(v => {
         const ready = v.status === 'ready';
         const isDeleting = deleting.has(v.id);
+        const hasThumbnail = v.thumbnail_url || v.thumbnailUrl; // backend might use either snake or camel
+        const thumbnailEndpoint = `${import.meta.env.VITE_API_PLAYBACK}/playback/videos/${v.upload_id}/thumbnail.jpg`;
         
         return (
           <div key={v.upload_id} className="p-3 rounded bg-gray-800 flex flex-col">
+            {ready && hasThumbnail && import.meta.env.VITE_API_PLAYBACK ? (
+              <div className="mb-2 cursor-pointer group" onClick={() => ready && onPlay(v.upload_id)}>
+                <div className="relative aspect-video w-full overflow-hidden rounded">
+                  <img 
+                    src={thumbnailEndpoint}
+                    alt={v.title}
+                    className="object-cover w-full h-full transition-opacity duration-300 opacity-100"
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      // Fallback: hide image if thumbnail fails to load
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center text-xs bg-gray-700 text-gray-400" style={{display: 'none'}}>
+                    No thumbnail
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="mb-2 aspect-video w-full bg-gray-700 rounded flex items-center justify-center text-xs text-gray-400">
+                {ready ? 'No thumbnail' : 'Processing'}
+              </div>
+            )}
             <div className="font-semibold truncate" title={v.title}>{v.title}</div>
             <div className="text-xs text-gray-400 flex gap-2 items-center mb-2">
               <span>{v.category}</span>
