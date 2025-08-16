@@ -1,26 +1,24 @@
 #!/bin/sh
 
-# Find the main JavaScript bundle file
-# Vite usually puts it in assets/index-*.js
-JS_BUNDLE=$(find /usr/share/nginx/html/assets -name "index-*.js")
+# This script will generate the config.js file using environment variables
+# The output path is where Nginx serves files from
+CONFIG_FILE="/usr/share/nginx/html/config.js"
 
-# Check if we found the bundle
-if [ -z "$JS_BUNDLE" ]; then
-  echo "Error: Could not find the main JS bundle file."
-  exit 1
-fi
+echo "Generating runtime configuration for the frontend..."
 
-echo "Found JS bundle: $JS_BUNDLE"
+# Use a here-document (cat <<EOF) to write the JavaScript file
+cat <<EOF > ${CONFIG_FILE}
+window.runtimeConfig = {
+  VITE_API_UPLOAD: "${VITE_API_UPLOAD}",
+  VITE_API_CATALOG: "${VITE_API_CATALOG}",
+  VITE_API_PLAYBACK: "${VITE_API_PLAYBACK}",
+  VITE_JWT: "${VITE_JWT}",
+};
+EOF
 
-# Replace the placeholders with the actual environment variable values
-# The 'g' flag ensures all occurrences are replaced
-sed -i "s|__VITE_API_UPLOAD__|${VITE_API_UPLOAD}|g" $JS_BUNDLE
-sed -i "s|__VITE_API_CATALOG__|${VITE_API_CATALOG}|g" $JS_BUNDLE
-sed -i "s|__VITE_API_PLAYBACK__|${VITE_API_PLAYBACK}|g" $JS_BUNDLE
-sed -i "s|__VITE_JWT__|${VITE_JWT}|g" $JS_BUNDLE
-
-echo "Configuration has been injected."
+echo "Configuration generated successfully at ${CONFIG_FILE}"
+cat ${CONFIG_FILE} # Print the generated file content for debugging
 
 # Start the Nginx server in the foreground
-# This is the original CMD of the nginx image, it's important to end with this
+# This command must be the last one
 exec nginx -g 'daemon off;'

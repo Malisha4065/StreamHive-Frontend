@@ -1,6 +1,0 @@
-window.runtimeConfig = {
-  VITE_API_UPLOAD: "__VITE_API_UPLOAD__",
-  VITE_API_CATALOG: "__VITE_API_CATALOG__",
-  VITE_API_PLAYBACK: "__VITE_API_PLAYBACK__",
-  VITE_JWT: "__VITE_JWT__",
-};
