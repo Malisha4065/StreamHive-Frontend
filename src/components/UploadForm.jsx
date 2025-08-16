@@ -23,9 +23,9 @@ export default function UploadForm({ onUploaded }) {
       fd.append('tags', tags);
       fd.append('category', category);
       fd.append('isPrivate', isPrivate);
-      const r = await fetch(import.meta.env.VITE_API_UPLOAD, {
+      const r = await fetch(window.runtimeConfig.VITE_API_UPLOAD, {
         method: 'POST',
-        headers: { Authorization: 'Bearer ' + import.meta.env.VITE_JWT },
+        headers: { Authorization: 'Bearer ' + window.runtimeConfig.VITE_JWT },
         body: fd
       });
       if (!r.ok) throw new Error('Upload failed');

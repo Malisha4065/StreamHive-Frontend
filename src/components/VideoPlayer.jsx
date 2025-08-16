@@ -23,7 +23,7 @@ export default function VideoPlayer({ uploadId }) {
   const [loading, setLoading] = useState(false);
   const [manualVariants, setManualVariants] = useState([]); // fallback for native HLS
 
-  const base = (import.meta.env.VITE_API_PLAYBACK || '').replace(/\/$/, '');
+  const base = (window.runtimeConfig.VITE_API_PLAYBACK || '').replace(/\/$/, '');
 
   // Fetch descriptor (title etc.) & parse master for fallback variants
   useEffect(() => {

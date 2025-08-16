@@ -7,7 +7,7 @@ export default function StatusPoller({ uploadId, onReady }) {
     if (!uploadId) return;
     let timer;
     const poll = async () => {
-      const r = await fetch(`${import.meta.env.VITE_API_CATALOG}/videos/upload/${uploadId}`);
+      const r = await fetch(`${window.runtimeConfig.VITE_API_CATALOG}/videos/upload/${uploadId}`);
       if (r.ok) {
         const v = await r.json();
         setStatus(v.status);

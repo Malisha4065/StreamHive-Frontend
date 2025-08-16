@@ -10,7 +10,7 @@ export default function VideoList({ onPlay }) {
 
   const loadVideos = async () => {
     try {
-      const apiUrl = `${import.meta.env.VITE_API_CATALOG}/videos?page=1`;
+      const apiUrl = `${window.runtimeConfig.VITE_API_CATALOG}/videos?page=1`;
       setDebugInfo(`Fetching from: ${apiUrl}`);
       console.log('Fetching videos from:', apiUrl);
       const r = await fetch(apiUrl);
@@ -41,7 +41,7 @@ export default function VideoList({ onPlay }) {
     setDeleting(prev => new Set(prev.add(videoId)));
     
     try {
-      const endpoint = `${import.meta.env.VITE_API_CATALOG}/videos/${videoId}`;
+      const endpoint = `${window.runtimeConfig.VITE_API_CATALOG}/videos/${videoId}`;
       
       const response = await fetch(endpoint, {
         method: 'DELETE',
@@ -84,11 +84,11 @@ export default function VideoList({ onPlay }) {
         const ready = v.status === 'ready';
         const isDeleting = deleting.has(v.id);
         const hasThumbnail = v.thumbnail_url || v.thumbnailUrl; // backend might use either snake or camel
-        const thumbnailEndpoint = `${import.meta.env.VITE_API_PLAYBACK}/playback/videos/${v.upload_id}/thumbnail.jpg`;
+        const thumbnailEndpoint = `${window.runtimeConfig.VITE_API_PLAYBACK}/playback/videos/${v.upload_id}/thumbnail.jpg`;
         
         return (
           <div key={v.upload_id} className="p-3 rounded bg-gray-800 flex flex-col">
-            {ready && hasThumbnail && import.meta.env.VITE_API_PLAYBACK ? (
+            {ready && hasThumbnail && window.runtimeConfig.VITE_API_PLAYBACK ? (
               <div className="mb-2 cursor-pointer group" onClick={() => ready && onPlay(v.upload_id)}>
                 <div className="relative aspect-video w-full overflow-hidden rounded">
                   <img 
