@@ -10,11 +10,10 @@ import './components/login.css';
 export default function App() {
   const [currentUploadId, setCurrentUploadId] = useState('');
   const [playbackId, setPlaybackId] = useState('');
-  const [jwt, setJwt] = useState(window.runtimeConfig?.VITE_JWT || '');
+  const [jwt, setJwt] = useState('');
 
   const handleLogin = (token) => {
     setJwt(token);
-    window.runtimeConfig.VITE_JWT = token;
   };
 
   return (
@@ -25,7 +24,7 @@ export default function App() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <UploadForm onUploaded={setCurrentUploadId} />
+            <UploadForm onUploaded={setCurrentUploadId} jwt={jwt} />
             <StatusPoller uploadId={currentUploadId} onReady={setPlaybackId} />
           </div>
           <div>
