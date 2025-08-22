@@ -1,0 +1,40 @@
+input[type=email], input[type=password] {
+    width: 300px;
+    padding: 12px 20px;
+    margin: 8px;
+    background-color: rgba(217, 217, 217, 1);
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    border-radius: 20px;
+    font-size: 16px;
+    height: 40px;
+  }
+
+  button:hover {
+    opacity: 0.7;
+    border: none;
+  }
+ 
+  .container {
+    margin: 0 auto;
+    display: flex;
+  }  
+
+  .container .content {
+    color: #000000;
+    width: 50%;
+    justify-content: center;
+    text-align: center;
+    padding: 30px;
+  }
+
+  .loginbtn {
+    width: 100px;
+    height: auto;
+    padding: 5px;
+    background-color: rgb(196, 165, 40);
+    color: white;
+    margin: 10px;
+    cursor: pointer;
+  }
