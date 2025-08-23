@@ -5,13 +5,15 @@ import VideoList from './components/VideoList.jsx';
 import StatusPoller from './components/StatusPoller.jsx';
 import Login from './components/Login.jsx';
 import Footer from './components/Footer.jsx';
+import Home from './components/Home.jsx';
 import './components/login.css'; // Optional if using custom CSS
 
 export default function App() {
   const [currentUploadId, setCurrentUploadId] = useState('');
   const [playbackId, setPlaybackId] = useState('');
   const [jwt, setJwt] = useState(window.runtimeConfig?.VITE_JWT || '');
-
+  const [page, setPage] = useState('home');
+  
   const handleLogin = (token) => {
     setJwt(token);
     window.runtimeConfig.VITE_JWT = token;
@@ -63,6 +65,8 @@ export default function App() {
               <Login onLogin={handleLogin} />
             </div>
           </div>
+        ) : page === 'home' ? (
+          <Home onNavigateUpload={() => setPage('dashboard')} />
         ) : (
           <>
             <div className="grid gap-6 md:grid-cols-2">
