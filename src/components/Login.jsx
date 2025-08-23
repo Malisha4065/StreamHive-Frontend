@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./login.css";
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -30,43 +29,43 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="login">
-      <div className="container bg-white text-center justify-center flex">
-        <div className="content">
-          <div className="title m-5 font-bold text-2xl text-gray-700">
-            <span>SIGN IN</span>
-            <hr />
-          </div>
-          <form onSubmit={handleSubmit}>
-            <div className="m-5 text-slate-500">
-              <label htmlFor="email">
-                <b>Email Address*</b>
-              </label>
-              <input
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                id="email"
-                placeholder="E-Mail"
-                required
-              />
-            </div>
-            <div className="m-5 text-slate-500">
-              <label htmlFor="psw">
-                <b>Password</b>
-              </label>
-              <input
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                id="psw"
-                placeholder="Password"
-                required
-              />
-            </div>
-            <button className="loginbtn">Login</button>
-            {error && <div style={{ color: 'red' }}>{error}</div>}
-          </form>
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="text-center">
+        <div className="text-2xl font-bold text-slate-200">Sign in</div>
+        <p className="text-slate-400 text-sm mt-1">Use your account to continue</p>
       </div>
-    </div>
+
+      <div className="space-y-4">
+        <label className="block">
+          <span className="block text-sm text-slate-300 mb-1">Email address</span>
+          <input
+            className="input"
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            id="email"
+            placeholder="you@example.com"
+            required
+          />
+        </label>
+
+        <label className="block">
+          <span className="block text-sm text-slate-300 mb-1">Password</span>
+          <input
+            className="input"
+            onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            id="psw"
+            placeholder="••••••••"
+            required
+          />
+        </label>
+      </div>
+
+      {error && <div className="text-rose-300 text-sm">{error}</div>}
+
+      <div className="flex items-center justify-between">
+        <button className="btn-primary w-full">Login</button>
+      </div>
+    </form>
   );
 }
