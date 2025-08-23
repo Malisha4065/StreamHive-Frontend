@@ -9,7 +9,7 @@ export default function Footer() {
         <div>
           <div className="text-slate-200 font-semibold">StreamHive</div>
           <p className="mt-2 text-slate-400/80">
-            Mock-friendly streaming UI for rapid frontend iteration.
+            The best streaming app Developed by AICGR Group.
           </p>
         </div>
         <div>
