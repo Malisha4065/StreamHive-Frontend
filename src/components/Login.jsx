@@ -1,20 +1,23 @@
 import React, { useState } from "react";
+import './login.css';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setIsSubmitting(true);
     try {
       const response = await fetch(
         window.runtimeConfig.VITE_API_LOGIN || "/api/auth/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password }),
         }
       );
       if (!response.ok) throw new Error("Login failed");
@@ -25,47 +28,51 @@ export default function Login({ onLogin }) {
       }
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="text-center">
-        <div className="text-2xl font-bold text-slate-200">Sign in</div>
-        <p className="text-slate-400 text-sm mt-1">Use your account to continue</p>
+    <div className="login-container">
+      <div className="login-card">
+        <h1 className="login-title">Sign In</h1>
+        <p className="login-subtitle">Enter your credentials to continue</p>
+
+        <form onSubmit={handleSubmit} className="login-form">
+          <label>
+            <span>Email</span>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
+
+          <label>
+            <span>Password</span>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+
+          {error && <div className="error-msg">{error}</div>}
+
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <p className="signup-text">
+          Don't have an account? <a href="#">Sign up</a>
+        </p>
       </div>
-
-      <div className="space-y-4">
-        <label className="block">
-          <span className="block text-sm text-slate-300 mb-1">Email address</span>
-          <input
-            className="input"
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            id="email"
-            placeholder="you@example.com"
-            required
-          />
-        </label>
-
-        <label className="block">
-          <span className="block text-sm text-slate-300 mb-1">Password</span>
-          <input
-            className="input"
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            id="psw"
-            placeholder="••••••••"
-            required
-          />
-        </label>
-      </div>
-
-      {error && <div className="text-rose-300 text-sm">{error}</div>}
-
-      <div className="flex items-center justify-between">
-        <button className="btn-primary w-full">Login</button>
-      </div>
-    </form>
+    </div>
   );
 }
