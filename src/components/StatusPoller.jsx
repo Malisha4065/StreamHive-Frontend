@@ -23,5 +23,9 @@ export default function StatusPoller({ uploadId, onReady }) {
   }, [uploadId, onReady]);
 
   if (!uploadId) return null;
-  return <div className="mt-2 text-sm text-gray-300">Transcode status: {status || 'pending...'}</div>;
+  return (
+    <div className="mt-3">
+      <span className="badge-muted">Transcode status: {status || 'pending…'}</span>
+    </div>
+  );
 }
