@@ -11,7 +11,7 @@ import './components/login.css'; // Optional if using custom CSS
 export default function App() {
   const [currentUploadId, setCurrentUploadId] = useState('');
   const [playbackId, setPlaybackId] = useState('');
-  const [jwt, setJwt] = useState(window.runtimeConfig?.VITE_JWT || '');
+  const [jwt, setJwt] = useState('');
   const [page, setPage] = useState('home');
   
   const handleLogin = (token) => {
@@ -71,7 +71,7 @@ export default function App() {
           <>
             <div className="grid gap-6 md:grid-cols-2">
               <div className="card">
-                <UploadForm onUploaded={setCurrentUploadId} />
+                <UploadForm onUploaded={setCurrentUploadId} jwt={jwt} />
                 <StatusPoller uploadId={currentUploadId} onReady={setPlaybackId} />
               </div>
               <div className="card">

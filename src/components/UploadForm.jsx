@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function UploadForm({ onUploaded }) {
+export default function UploadForm({ onUploaded, jwt }) {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -25,7 +25,7 @@ export default function UploadForm({ onUploaded }) {
       fd.append('isPrivate', isPrivate);
       const r = await fetch(window.runtimeConfig.VITE_API_UPLOAD, {
         method: 'POST',
-        headers: { Authorization: 'Bearer ' + window.runtimeConfig.VITE_JWT },
+        headers: { Authorization: 'Bearer ' + jwt },
         body: fd
       });
       if (!r.ok) throw new Error('Upload failed');
