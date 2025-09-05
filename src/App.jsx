@@ -91,8 +91,11 @@ export default function App() {
                       setJwt("");
                       window.runtimeConfig = window.runtimeConfig || {};
                       window.runtimeConfig.VITE_JWT = "";
+                      window.runtimeConfig.username = "";
                       setShowProfileMenu(false);
-                      window.location.reload(); // optional
+                      setPage('home'); // Reset to home page
+                      setCurrentUploadId(''); // Clear any upload state
+                      setPlaybackId(''); // Clear any playback state
                     }}
                   >
                     Logout
