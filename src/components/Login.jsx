@@ -40,8 +40,10 @@ export default function Login({ onLogin }) {
           window.runtimeConfig.VITE_JWT = data.token;
           // Prefer provided name, fallback to email prefix
           const displayName = (data.user && (data.user.name || data.user.username)) || name?.trim() || (email?.split("@")[0] || "User");
+          const userId = data.user && (data.user.id || data.user.userId);
           window.runtimeConfig.username = displayName;
-          try { localStorage.setItem("jwt", data.token); localStorage.setItem("username", displayName); } catch {}
+          if (userId) { window.runtimeConfig.userId = userId; }
+          try { localStorage.setItem("jwt", data.token); localStorage.setItem("username", displayName); if (userId) localStorage.setItem("userId", String(userId)); } catch {}
           if (onLogin) onLogin(data.token);
         } else {
           // No token returned -> ask user to sign in
@@ -66,8 +68,10 @@ export default function Login({ onLogin }) {
           window.runtimeConfig.VITE_JWT = data.token;
           // Try to infer username from response or email
           const displayName = (data.user && (data.user.name || data.user.username)) || (email?.split("@")[0] || "User");
+          const userId = data.user && (data.user.id || data.user.userId);
           window.runtimeConfig.username = displayName;
-          try { localStorage.setItem("jwt", data.token); localStorage.setItem("username", displayName); } catch {}
+          if (userId) { window.runtimeConfig.userId = userId; }
+          try { localStorage.setItem("jwt", data.token); localStorage.setItem("username", displayName); if (userId) localStorage.setItem("userId", String(userId)); } catch {}
           // Optional: clear password on successful login
           setPassword("");
           if (onLogin) onLogin(data.token);

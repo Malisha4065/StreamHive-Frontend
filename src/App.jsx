@@ -20,6 +20,7 @@ export default function App() {
     try {
       const savedToken = localStorage.getItem('jwt');
       const savedName = localStorage.getItem('username');
+      const savedUserId = localStorage.getItem('userId');
       if (savedToken) {
         setJwt(savedToken);
         window.runtimeConfig = window.runtimeConfig || {};
@@ -28,6 +29,10 @@ export default function App() {
       if (savedName) {
         window.runtimeConfig = window.runtimeConfig || {};
         window.runtimeConfig.username = savedName;
+      }
+      if (savedUserId) {
+        window.runtimeConfig = window.runtimeConfig || {};
+        window.runtimeConfig.userId = parseInt(savedUserId);
       }
     } catch {}
   }, []);

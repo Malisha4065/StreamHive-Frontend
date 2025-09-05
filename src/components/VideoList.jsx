@@ -8,9 +8,13 @@ export default function VideoList({ onPlay }) {
 
   const loadVideos = async () => {
     try {
-      const apiUrl = `${window.runtimeConfig.VITE_API_CATALOG}/videos?page=1`;
-      setDebugInfo(`Fetching from: ${apiUrl}`);
-      const r = await fetch(apiUrl);
+      // Prefer fetching the current user's library to include private videos
+      const userId = window.runtimeConfig?.userId || (()=>{ try { return parseInt(localStorage.getItem('userId')||''); } catch { return ''; } })();
+      const endpoint = userId ? `${window.runtimeConfig.VITE_API_CATALOG}/users/${userId}/videos?page=1` : `${window.runtimeConfig.VITE_API_CATALOG}/videos?page=1`;
+      setDebugInfo(`Fetching from: ${endpoint} (userId=${userId||'anon'})`);
+      const headers = {};
+      if (userId) headers['X-User-ID'] = String(userId);
+      const r = await fetch(endpoint, { headers });
       setDebugInfo(`Response: ${r.status} ${r.ok ? 'OK' : 'Error'}`);
       if (r.ok) {
         const data = await r.json();
