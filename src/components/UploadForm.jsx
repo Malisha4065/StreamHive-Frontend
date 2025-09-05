@@ -161,13 +161,12 @@ export default function UploadForm({ onUploaded, jwt }) {
             onChange={e=>setIsPrivate(e.target.checked)} 
           />
           <div className="flex items-center gap-2">
-            <span>{isPrivate ? '🔒' : '🌍'}</span>
             <div>
               <div className="text-slate-300 font-medium">
-                {isPrivate ? 'Private video' : 'Public video'}
+                'Private Video'
               </div>
               <div className="text-xs text-slate-500">
-                {isPrivate ? 'Only you can see this video' : 'Anyone can view this video'}
+                'Only you can see this video'
               </div>
             </div>
           </div>

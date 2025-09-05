@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 export default function Comments({ videoId, ownerId }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [backgroundLoading, setBackgroundLoading] = useState(false);
   const [error, setError] = useState('');
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
@@ -23,9 +24,16 @@ export default function Comments({ videoId, ownerId }) {
     return isLoggedIn && (String(c.user_id) === String(userId) || String(ownerId) === String(userId));
   }, [isLoggedIn, userId, ownerId]);
 
-  const load = async () => {
+  const load = async (isBackgroundRefresh = false) => {
     if (!videoId) return;
-    setLoading(true);
+    
+    // Only show loading spinner for initial load or user-initiated actions
+    if (!isBackgroundRefresh) {
+      setLoading(true);
+    } else {
+      setBackgroundLoading(true);
+    }
+    
     setError('');
     try {
       const headers = {};
@@ -41,12 +49,26 @@ export default function Comments({ videoId, ownerId }) {
         return;
       }
       const data = await r.json();
-      setComments(Array.isArray(data.comments) ? data.comments : []);
-      if (typeof data.total === 'number') setTotal(data.total);
+      const newComments = Array.isArray(data.comments) ? data.comments : [];
+      
+      // Only update if there are actual changes (to prevent unnecessary re-renders)
+      if (isBackgroundRefresh) {
+        const currentCommentsStr = JSON.stringify(comments.map(c => ({ id: c.id, content: c.content, created_at: c.created_at })));
+        const newCommentsStr = JSON.stringify(newComments.map(c => ({ id: c.id, content: c.content, created_at: c.created_at })));
+        
+        if (currentCommentsStr !== newCommentsStr || total !== data.total) {
+          setComments(newComments);
+          if (typeof data.total === 'number') setTotal(data.total);
+        }
+      } else {
+        setComments(newComments);
+        if (typeof data.total === 'number') setTotal(data.total);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
       setLoading(false);
+      setBackgroundLoading(false);
     }
   };
 
@@ -106,11 +128,11 @@ export default function Comments({ videoId, ownerId }) {
     if (!videoId) return;
     
     const intervalId = setInterval(() => {
-      load();
-    }, 10000); // Refresh every 10 seconds
+      load(true); // Pass true to indicate this is a background refresh
+    }, 30000); // Refresh every 30 seconds (increased from 10s to reduce frequency)
     
     return () => clearInterval(intervalId);
-  }, [videoId, page, perPage]);
+  }, [videoId, page, perPage, comments, total]); // Added comments and total to dependencies
 
   return (
     <div className="mt-6">
@@ -121,6 +143,12 @@ export default function Comments({ videoId, ownerId }) {
           <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full">
             {total}
           </span>
+        )}
+        {backgroundLoading && (
+          <div className="flex items-center gap-1 text-slate-500 text-xs">
+            <div className="animate-spin w-3 h-3 border border-slate-500 border-t-transparent rounded-full"></div>
+            <span>Updating...</span>
+          </div>
         )}
       </div>
       {loading ? (
@@ -158,7 +186,7 @@ export default function Comments({ videoId, ownerId }) {
                     className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-2 py-1 rounded-md text-rose-400 hover:text-rose-300 hover:bg-rose-900/20"
                     title="Delete comment"
                   >
-                    🗑️
+                    🗑️ Delete
                   </button>
                 )}
               </div>

@@ -104,7 +104,7 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
           {scope === 'mine' ? (filterPrivateOnly ? '🔒' : '📚') : '🎬'}
         </span>
         <h3 className="text-lg font-semibold text-slate-200">
-          {scope === 'mine' ? (filterPrivateOnly ? 'Your Private Videos' : 'Your Library') : 'All Videos'}
+          {scope === 'mine' ? (filterPrivateOnly ? 'Private Videos' : 'Your Library') : 'All Videos'}
         </h3>
         {videos.length > 0 && (
           <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full">
@@ -202,7 +202,6 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <span>{ready ? '▶️' : '⏳'}</span>
                     <span>{ready ? 'Play' : 'Processing'}</span>
                   </div>
                 </button>
