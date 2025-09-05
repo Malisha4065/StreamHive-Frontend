@@ -83,6 +83,13 @@ body, html {
   animation: shake 0.3s;
 }
 
+/* Success message */
+.success-msg {
+  color: #34d399; /* emerald-400 */
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
 /* Button (matched color) */
 .login-form button {
   width: 100%;

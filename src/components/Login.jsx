@@ -6,12 +6,14 @@ export default function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setIsSubmitting(true);
     
     try {
@@ -26,20 +28,25 @@ export default function Login({ onLogin }) {
           }
         );
         if (!response.ok) throw new Error("Signup failed");
-        const data = await response.json();
-        if (data.token) {
+        let data = {};
+        try { data = await response.json(); } catch {}
+        // Clear the form on successful signup regardless of token
+        setName("");
+        setEmail("");
+        setPassword("");
+        if (data && data.token) {
           // Ensure runtimeConfig exists
           window.runtimeConfig = window.runtimeConfig || {};
           window.runtimeConfig.VITE_JWT = data.token;
           // Prefer provided name, fallback to email prefix
-          const displayName = name?.trim() || (email?.split("@")[0] || "User");
+          const displayName = (data.user && (data.user.name || data.user.username)) || name?.trim() || (email?.split("@")[0] || "User");
           window.runtimeConfig.username = displayName;
           try { localStorage.setItem("jwt", data.token); localStorage.setItem("username", displayName); } catch {}
-          // Reset form fields after successful signup
-          setName("");
-          setEmail("");
-          setPassword("");
           if (onLogin) onLogin(data.token);
+        } else {
+          // No token returned -> ask user to sign in
+          setSuccess("Signup successful. Please sign in.");
+          setIsSignup(false);
         }
       } else {
         // Handle login
@@ -118,6 +125,7 @@ export default function Login({ onLogin }) {
           </label>
 
           {error && <div className="error-msg">{error}</div>}
+          {success && <div className="success-msg">{success}</div>}
 
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting 
@@ -135,6 +143,7 @@ export default function Login({ onLogin }) {
               e.preventDefault();
               setIsSignup(!isSignup);
               setError("");
+              setSuccess("");
             }}
           >
             {isSignup ? "Sign In" : "Sign Up"}
