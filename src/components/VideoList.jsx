@@ -35,18 +35,34 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
     }
   };
 
+  // Helpers
+  const getUserId = () => {
+    try {
+      const rid = window.runtimeConfig?.userId;
+      if (rid != null && rid !== '') return String(rid);
+      const stored = localStorage.getItem('userId');
+      if (stored != null && stored !== '') return String(parseInt(stored));
+    } catch {}
+    return null;
+  };
+
   // Check if current user owns the video
   const canDeleteVideo = (video) => {
-    const userId = window.runtimeConfig?.userId || (()=>{ try { return parseInt(localStorage.getItem('userId')||''); } catch { return null; } })();
-    return userId && video.user_id === userId;
+    const uid = getUserId();
+    return !!uid && String(video.user_id) === String(uid);
   };
 
   const deleteVideo = async (videoId) => {
     if (!window.confirm('Delete this video permanently?')) return;
     setDeleting(prev => new Set(prev.add(videoId)));
     try {
-      const endpoint = `${window.runtimeConfig.VITE_API_CATALOG}/videos/${videoId}`;
-      const response = await fetch(endpoint, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
+  const endpoint = `${window.runtimeConfig.VITE_API_CATALOG}/videos/${videoId}`;
+  const headers = { 'Content-Type': 'application/json' };
+  const uid = getUserId();
+  if (uid) headers['X-User-ID'] = String(uid);
+  const jwt = window.runtimeConfig?.VITE_JWT;
+  if (jwt) headers['Authorization'] = 'Bearer ' + jwt;
+  const response = await fetch(endpoint, { method: 'DELETE', headers });
       if (response.ok) {
         setVideos(prev => prev.filter(v => v.id !== videoId));
       } else {
@@ -177,10 +193,14 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
                 <h4 className="font-semibold text-slate-200 line-clamp-2 leading-tight" title={v.title}>
                   {v.title}
                 </h4>
-                <div className="flex items-center gap-2 text-xs text-slate-400">
+                <div className="flex items-center gap-3 text-xs text-slate-400">
                   <span className="flex items-center gap-1">
                     <span>📂</span>
                     <span className="capitalize">{v.category || 'Uncategorized'}</span>
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span>👤</span>
+                    <span>{v.username || v.owner_name || `User ${v.user_id}`}</span>
                   </span>
                   {canDelete && (
                     <span className="flex items-center gap-1 text-indigo-400">
