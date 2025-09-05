@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
+import Comments from './Comments.jsx';
 
 /*
  VideoPlayer
@@ -22,6 +23,7 @@ export default function VideoPlayer({ uploadId }) {
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [manualVariants, setManualVariants] = useState([]); // fallback for native HLS
+  const [catalogVideo, setCatalogVideo] = useState(null); // {id, user_id, ...}
 
   const base = (window.runtimeConfig.VITE_API_PLAYBACK || '').replace(/\/$/, '');
 
@@ -33,11 +35,20 @@ export default function VideoPlayer({ uploadId }) {
       try {
         setTitle('');
         setManualVariants([]);
+        setCatalogVideo(null);
+        // Lookup playback descriptor (title)
         const descUrl = `${base}/playback/videos/${uploadId}`;
         const r = await fetch(descUrl);
         if (r.ok) {
           const data = await r.json();
-            if (!aborted) setTitle(data.title || uploadId);
+          if (!aborted) setTitle(data.title || uploadId);
+        }
+        // Lookup catalog video by uploadId to get videoId and ownerId
+        const catalogBase = (window.runtimeConfig.VITE_API_CATALOG || '').replace(/\/$/, '');
+        const cr = await fetch(`${catalogBase}/videos/upload/${uploadId}`);
+        if (cr.ok) {
+          const cv = await cr.json();
+          if (!aborted) setCatalogVideo(cv);
         }
         // Fetch master to detect which renditions exist (for Safari fallback & UI pre-population)
         const masterUrl = `${base}/playback/videos/${uploadId}/master.m3u8`;
@@ -187,6 +198,9 @@ export default function VideoPlayer({ uploadId }) {
         )}
       </div>
       {error && <div className="text-red-400 text-xs">{error}</div>}
+      {catalogVideo && (
+        <Comments videoId={catalogVideo.id} ownerId={catalogVideo.user_id} />
+      )}
     </div>
   );
 }
