@@ -16,7 +16,7 @@ export default function UploadForm({ onUploaded, jwt }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
-  const [category, setCategory] = useState('other');
+  const [category, setCategory] = useState('entertainment');
   const [isPrivate, setIsPrivate] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
