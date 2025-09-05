@@ -1,11 +1,22 @@
 import React, { useState } from 'react';
 
+const ALLOWED_CATEGORIES = [
+  'entertainment',
+  'education',
+  'music',
+  'sports',
+  'gaming',
+  'news',
+  'technology',
+  'other',
+];
+
 export default function UploadForm({ onUploaded, jwt }) {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('other');
   const [isPrivate, setIsPrivate] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -21,7 +32,7 @@ export default function UploadForm({ onUploaded, jwt }) {
       fd.append('title', title);
       fd.append('description', description);
       fd.append('tags', tags);
-      fd.append('category', category);
+  fd.append('category', category || 'other');
       fd.append('isPrivate', isPrivate);
       const r = await fetch(window.runtimeConfig.VITE_API_UPLOAD, {
         method: 'POST',
@@ -32,7 +43,7 @@ export default function UploadForm({ onUploaded, jwt }) {
       const data = await r.json();
       onUploaded(data.uploadId);
       // reset fields (optional)
-      setTitle(''); setDescription(''); setTags(''); setCategory(''); setIsPrivate(false); setFile(null);
+  setTitle(''); setDescription(''); setTags(''); setCategory('other'); setIsPrivate(false); setFile(null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -58,7 +69,15 @@ export default function UploadForm({ onUploaded, jwt }) {
         </label>
         <label className="block">
           <span className="block text-sm text-slate-300 mb-1">Category</span>
-          <input value={category} onChange={e=>setCategory(e.target.value)} placeholder="Category" className="input" />
+          <select
+            value={category}
+            onChange={(e)=>setCategory(e.target.value)}
+            className="input"
+          >
+            {ALLOWED_CATEGORIES.map((c) => (
+              <option key={c} value={c}>{c[0].toUpperCase() + c.slice(1)}</option>
+            ))}
+          </select>
         </label>
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import UploadForm from './components/UploadForm.jsx';
 import VideoPlayer from './components/VideoPlayer.jsx';
 import VideoList from './components/VideoList.jsx';
@@ -13,6 +13,24 @@ export default function App() {
   const [playbackId, setPlaybackId] = useState('');
   const [jwt, setJwt] = useState('');
   const [page, setPage] = useState('home');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  // Load persisted auth on mount
+  useEffect(()=>{
+    try {
+      const savedToken = localStorage.getItem('jwt');
+      const savedName = localStorage.getItem('username');
+      if (savedToken) {
+        setJwt(savedToken);
+        window.runtimeConfig = window.runtimeConfig || {};
+        window.runtimeConfig.VITE_JWT = savedToken;
+      }
+      if (savedName) {
+        window.runtimeConfig = window.runtimeConfig || {};
+        window.runtimeConfig.username = savedName;
+      }
+    } catch {}
+  }, []);
   
   const handleLogin = (token) => {
     setJwt(token);
@@ -36,21 +54,51 @@ export default function App() {
 
           {/* Right - User Profile + Logout */}
           {jwt && (
-            <div className="flex items-center gap-4">
-              <div className="h-10 w-10 rounded-full bg-indigo-600 grid place-items-center text-white font-bold">
-                {window.runtimeConfig?.username?.[0]?.toUpperCase() || "U"}
-              </div>
-
+            <div className="relative">
               <button
-                onClick={() => {
-                  setJwt("");
-                  window.runtimeConfig.VITE_JWT = "";
-                  window.location.reload(); // optional
-                }}
-                className="btn-ghost"
+                aria-label="Profile menu"
+                className="h-10 w-10 rounded-full bg-indigo-600 grid place-items-center text-white font-bold select-none"
+                onClick={() => setShowProfileMenu(v=>!v)}
               >
-                Logout
+                {window.runtimeConfig?.username?.[0]?.toUpperCase() || "U"}
               </button>
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/10 bg-slate-900/95 shadow-xl backdrop-blur p-2 z-50">
+                  <div className="px-3 py-2 text-sm text-slate-300">
+                    Signed in as
+                    <div className="font-semibold text-slate-100 truncate">
+                      {window.runtimeConfig?.username || 'User'}
+                    </div>
+                  </div>
+                  <div className="hr-glow my-2" />
+                  <button
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 rounded-lg"
+                    onClick={() => { setPage('home'); setShowProfileMenu(false); }}
+                  >
+                    Home
+                  </button>
+                  <button
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 rounded-lg"
+                    onClick={() => { setPage('dashboard'); setShowProfileMenu(false); }}
+                  >
+                    Dashboard
+                  </button>
+                  <div className="hr-glow my-2" />
+                  <button
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 rounded-lg text-rose-300"
+                    onClick={() => {
+                      try { localStorage.removeItem('jwt'); localStorage.removeItem('username'); } catch {}
+                      setJwt("");
+                      window.runtimeConfig = window.runtimeConfig || {};
+                      window.runtimeConfig.VITE_JWT = "";
+                      setShowProfileMenu(false);
+                      window.location.reload(); // optional
+                    }}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

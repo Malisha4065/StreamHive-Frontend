@@ -28,7 +28,17 @@ export default function Login({ onLogin }) {
         if (!response.ok) throw new Error("Signup failed");
         const data = await response.json();
         if (data.token) {
+          // Ensure runtimeConfig exists
+          window.runtimeConfig = window.runtimeConfig || {};
           window.runtimeConfig.VITE_JWT = data.token;
+          // Prefer provided name, fallback to email prefix
+          const displayName = name?.trim() || (email?.split("@")[0] || "User");
+          window.runtimeConfig.username = displayName;
+          try { localStorage.setItem("jwt", data.token); localStorage.setItem("username", displayName); } catch {}
+          // Reset form fields after successful signup
+          setName("");
+          setEmail("");
+          setPassword("");
           if (onLogin) onLogin(data.token);
         }
       } else {
@@ -44,7 +54,15 @@ export default function Login({ onLogin }) {
         if (!response.ok) throw new Error("Login failed");
         const data = await response.json();
         if (data.token) {
+          // Ensure runtimeConfig exists
+          window.runtimeConfig = window.runtimeConfig || {};
           window.runtimeConfig.VITE_JWT = data.token;
+          // Try to infer username from response or email
+          const displayName = (data.user && (data.user.name || data.user.username)) || (email?.split("@")[0] || "User");
+          window.runtimeConfig.username = displayName;
+          try { localStorage.setItem("jwt", data.token); localStorage.setItem("username", displayName); } catch {}
+          // Optional: clear password on successful login
+          setPassword("");
           if (onLogin) onLogin(data.token);
         }
       }
