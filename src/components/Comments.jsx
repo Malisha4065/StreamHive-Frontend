@@ -6,12 +6,16 @@ export default function Comments({ videoId, ownerId }) {
   const [error, setError] = useState('');
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
+  const [page, setPage] = useState(1);
+  const [perPage] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const apiBase = (window.runtimeConfig.VITE_API_CATALOG || '').replace(/\/$/, '');
   const userId = window.runtimeConfig?.userId || (()=>{ try { return parseInt(localStorage.getItem('userId')||''); } catch { return ''; } })();
   const isLoggedIn = !!userId;
 
   const canDelete = useMemo(() => (c) => {
+    // Permission based on IDs; display uses author_name
     return isLoggedIn && (String(c.user_id) === String(userId) || String(ownerId) === String(userId));
   }, [isLoggedIn, userId, ownerId]);
 
@@ -22,7 +26,7 @@ export default function Comments({ videoId, ownerId }) {
     try {
       const headers = {};
       if (userId) headers['X-User-ID'] = String(userId);
-      const r = await fetch(`${apiBase}/videos/${videoId}/comments`, { headers });
+      const r = await fetch(`${apiBase}/videos/${videoId}/comments?page=${page}&per_page=${perPage}`, { headers });
       if (!r.ok) {
         if (r.status === 403) {
           setError('Comments are not available for this video.');
@@ -34,6 +38,7 @@ export default function Comments({ videoId, ownerId }) {
       }
       const data = await r.json();
       setComments(Array.isArray(data.comments) ? data.comments : []);
+      if (typeof data.total === 'number') setTotal(data.total);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -54,7 +59,7 @@ export default function Comments({ videoId, ownerId }) {
           'Content-Type': 'application/json',
           ...(userId ? { 'X-User-ID': String(userId) } : {})
         },
-        body: JSON.stringify({ content: content.trim() })
+        body: JSON.stringify({ content: content.trim(), author_name: (window.runtimeConfig?.username || '') })
       });
       if (!r.ok) {
         const msg = r.status === 401 ? 'Please login' : (r.status === 403 ? 'Not allowed' : 'Failed to add comment');
@@ -62,7 +67,8 @@ export default function Comments({ videoId, ownerId }) {
         return;
       }
       setContent('');
-      await load();
+      // Reload first page to show newest first
+      setPage(1);
     } catch (e) {
       setError(e.message);
     } finally { setBusy(false); }
@@ -88,7 +94,7 @@ export default function Comments({ videoId, ownerId }) {
     }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [videoId]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [videoId, page, perPage]);
 
   return (
     <div className="mt-4">
@@ -106,7 +112,7 @@ export default function Comments({ videoId, ownerId }) {
             <div key={c.id} className="p-3 rounded-lg bg-slate-800/60 border border-white/10">
               <div className="text-sm text-slate-200 whitespace-pre-wrap">{c.content}</div>
               <div className="mt-1 text-xs text-slate-500 flex items-center gap-2">
-                <span>By User {c.user_id}</span>
+                <span>By {c.author_name || `User ${c.user_id}`}</span>
                 <span>•</span>
                 <span>{new Date(c.created_at).toLocaleString()}</span>
                 {canDelete(c) && (
@@ -126,10 +132,23 @@ export default function Comments({ videoId, ownerId }) {
           value={content}
           onChange={e => setContent(e.target.value)}
         />
-        <div className="flex justify-end mt-2">
-          <button disabled={!isLoggedIn || busy || !content.trim()} className={(!isLoggedIn || busy || !content.trim()) ? 'btn-muted' : 'btn-primary'}>
+        <div className="flex items-center justify-between mt-2">
+          <div className="text-xs text-slate-500">
+            {total > 0 && (
+              <>
+                <span>Page {page} of {Math.max(1, Math.ceil(total / perPage))}</span>
+                <span className="mx-2">•</span>
+                <span>{total} total</span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button type="button" className="btn-ghost" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p-1))}>Prev</button>
+            <button type="button" className="btn-ghost" disabled={comments.length < perPage || loading} onClick={() => setPage(p => p+1)}>Next</button>
+            <button disabled={!isLoggedIn || busy || !content.trim()} className={(!isLoggedIn || busy || !content.trim()) ? 'btn-muted' : 'btn-primary'}>
             {busy ? 'Posting…' : 'Post Comment'}
-          </button>
+            </button>
+          </div>
         </div>
       </form>
     </div>

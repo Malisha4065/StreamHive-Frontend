@@ -23,7 +23,7 @@ export default function VideoPlayer({ uploadId }) {
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [manualVariants, setManualVariants] = useState([]); // fallback for native HLS
-  const [catalogVideo, setCatalogVideo] = useState(null); // {id, user_id, ...}
+  const [catalogVideo, setCatalogVideo] = useState(null); // {id, user_id, username, ...}
 
   const base = (window.runtimeConfig.VITE_API_PLAYBACK || '').replace(/\/$/, '');
 
