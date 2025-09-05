@@ -3,8 +3,8 @@ import React from "react";
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="mt-12 text-sm text-slate-400">
-      <div className="hr-glow mb-6" />
+    <footer className="mt-12 text-sm text-slate-400 relative overflow-hidden">
+      <div className="hr-glow mb-6" aria-hidden="true" />
       <div className="grid gap-6 md:grid-cols-3">
         <div>
           <div className="text-slate-200 font-semibold">StreamHive</div>

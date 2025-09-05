@@ -3,22 +3,30 @@ import VideoPlayer from "./VideoPlayer.jsx";
 import VideoList from "./VideoList.jsx";
 import "./home.css";
 
-export default function Home({ onNavigateUpload }) {
+export default function Home({ onNavigateUpload, onNavigateLibrary }) {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const isLoggedIn = !!(window.runtimeConfig && window.runtimeConfig.VITE_JWT);
   const [privateCount, setPrivateCount] = useState(null); // null=unknown, number=loaded
 
   return (
     <div className="home-page p-4 md:p-6">
-      {/* Header with Upload button on right */}
+      {/* Header actions */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">All Videos</h2>
-        <button
-          onClick={onNavigateUpload}
-          className="ml-56 bg-red-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-700 transition"
-        >
-          ⬆ Upload Video
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={onNavigateLibrary}
+            className="btn-ghost"
+          >
+            My Library
+          </button>
+          <button
+            onClick={onNavigateUpload}
+            className="btn-primary"
+          >
+            ⬆ Upload Video
+          </button>
+        </div>
       </div>
 
       {/* Main Video Player (only render when a video is selected) */}

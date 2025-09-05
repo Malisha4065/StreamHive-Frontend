@@ -12,7 +12,7 @@ export default function App() {
   const [currentUploadId, setCurrentUploadId] = useState('');
   const [playbackId, setPlaybackId] = useState('');
   const [jwt, setJwt] = useState('');
-  const [page, setPage] = useState('home');
+  const [page, setPage] = useState('home'); // 'home' | 'upload' | 'library'
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   // Load persisted auth on mount
@@ -48,14 +48,19 @@ export default function App() {
       <header className="mb-6">
         <div className="flex items-center justify-between">
           {/* Left - Logo + App Name */}
-          <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="flex items-center gap-3 cursor-pointer select-none"
+            onClick={() => setPage('home')}
+            aria-label="Go to Home"
+          >
             <div className="h-10 w-10 rounded-2xl bg-white/10 grid place-items-center border border-white/10 shadow">
               <span className="text-lg">🎬</span>
             </div>
             <h1 className="text-2xl font-bold">
               <span className="title-gradient">StreamHive</span>
             </h1>
-          </div>
+          </button>
 
           {/* Right - User Profile + Logout */}
           {jwt && (
@@ -77,26 +82,18 @@ export default function App() {
                   </div>
                   <div className="hr-glow my-2" />
                   <button
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 rounded-lg"
-                    onClick={() => { setPage('home'); setShowProfileMenu(false); }}
-                  >
-                    Home
-                  </button>
-                  <button
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 rounded-lg"
-                    onClick={() => { setPage('dashboard'); setShowProfileMenu(false); }}
-                  >
-                    Dashboard
-                  </button>
-                  <div className="hr-glow my-2" />
-                  <button
                     className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 rounded-lg text-rose-300"
                     onClick={() => {
-                      try { localStorage.removeItem('jwt'); localStorage.removeItem('username'); } catch {}
+                      try {
+                        localStorage.removeItem('jwt');
+                        localStorage.removeItem('username');
+                        localStorage.removeItem('userId');
+                      } catch {}
                       setJwt("");
                       window.runtimeConfig = window.runtimeConfig || {};
                       window.runtimeConfig.VITE_JWT = "";
                       window.runtimeConfig.username = "";
+                      window.runtimeConfig.userId = undefined;
                       setShowProfileMenu(false);
                       setPage('home'); // Reset to home page
                       setCurrentUploadId(''); // Clear any upload state
@@ -122,21 +119,36 @@ export default function App() {
             </div>
           </div>
         ) : page === 'home' ? (
-          <Home onNavigateUpload={() => setPage('dashboard')} />
+          <Home
+            onNavigateUpload={() => setPage('upload')}
+            onNavigateLibrary={() => setPage('library')}
+          />
+        ) : page === 'upload' ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="card">
+              <UploadForm onUploaded={setCurrentUploadId} jwt={jwt} />
+              <StatusPoller uploadId={currentUploadId} onReady={setPlaybackId} />
+            </div>
+            <div className="card">
+              <VideoPlayer uploadId={playbackId} />
+            </div>
+          </div>
         ) : (
+          // Library page
           <>
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="card">
-                <UploadForm onUploaded={setCurrentUploadId} jwt={jwt} />
-                <StatusPoller uploadId={currentUploadId} onReady={setPlaybackId} />
-              </div>
+            {playbackId && (
               <div className="card">
                 <VideoPlayer uploadId={playbackId} />
               </div>
-            </div>
-
-            {/* Video Library */}
+            )}
             <div className="card">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xl font-bold">My Library</h2>
+                <div className="flex gap-2">
+                  <button className="btn-ghost" onClick={() => setPage('home')}>Home</button>
+                  <button className="btn-primary" onClick={() => setPage('upload')}>Upload</button>
+                </div>
+              </div>
               <VideoList scope="mine" onPlay={setPlaybackId} />
             </div>
           </>
