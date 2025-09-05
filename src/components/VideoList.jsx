@@ -65,12 +65,16 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
   if (loading) {
     return (
       <div>
-        <div className="text-sm text-slate-400 mb-3">Loading videos…</div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="flex items-center gap-2 mb-4 text-slate-400">
+          <div className="animate-spin w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full"></div>
+          <span className="text-sm">Loading videos…</span>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="surface animate-pulse p-3">
+            <div key={i} className="bg-slate-800/60 border border-white/10 rounded-xl p-4 animate-pulse">
               <div className="rounded-lg bg-slate-700/50 aspect-video mb-3" />
-              <div className="h-4 bg-slate-700/50 rounded w-3/4" />
+              <div className="h-4 bg-slate-700/50 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-slate-700/50 rounded w-1/2" />
             </div>
           ))}
         </div>
@@ -78,13 +82,37 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
     );
   }
   if (!videos.length) {
-    return <div className="mt-2 text-sm text-slate-400">No videos found. <br/><small>Debug: {debugInfo}</small></div>;
+    return (
+      <div className="text-center py-12">
+        <div className="text-4xl mb-4">
+          {scope === 'mine' ? '📚' : '🎬'}
+        </div>
+        <div className="text-slate-400 mb-2">
+          {scope === 'mine' ? 'No videos in your library yet.' : 'No videos found.'}
+        </div>
+        <div className="text-xs text-slate-500">
+          Debug: {debugInfo}
+        </div>
+      </div>
+    );
   }
   
   return (
     <div>
-      <div className="text-slate-200 font-semibold mb-3">{scope === 'mine' ? (filterPrivateOnly ? 'Your Private Videos' : 'Your Library') : 'All Videos'}</div>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xl">
+          {scope === 'mine' ? (filterPrivateOnly ? '🔒' : '📚') : '🎬'}
+        </span>
+        <h3 className="text-lg font-semibold text-slate-200">
+          {scope === 'mine' ? (filterPrivateOnly ? 'Your Private Videos' : 'Your Library') : 'All Videos'}
+        </h3>
+        {videos.length > 0 && (
+          <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full">
+            {videos.length}
+          </span>
+        )}
+      </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {videos.map(v => {
           const ready = v.status === 'ready';
           const isDeleting = deleting.has(v.id);
@@ -94,49 +122,102 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
           return (
             <div
               key={v.upload_id}
-              className="surface p-3 transition hover:translate-y-[-2px] hover:shadow-2xl"
+              className="group bg-gradient-to-br from-slate-800/60 to-slate-800/40 p-4 rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-xl"
             >
               <div
-                className={`mb-2 relative aspect-video w-full overflow-hidden rounded-lg bg-slate-800/70 grid place-items-center text-xs text-slate-400`}
+                className={`mb-3 relative aspect-video w-full overflow-hidden rounded-lg bg-slate-900/70 grid place-items-center text-xs text-slate-400 cursor-pointer`}
                 onClick={() => ready && onPlay(v.upload_id)}
-                title={ready ? 'Play' : 'Processing'}
+                title={ready ? 'Play video' : 'Video is still processing'}
               >
                 {ready && window.runtimeConfig.VITE_API_PLAYBACK ? (
-                  <img
-                    src={thumbnailEndpoint}
-                    alt={v.title}
-                    className="object-cover w-full h-full"
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                  />
+                  <>
+                    <img
+                      src={thumbnailEndpoint}
+                      alt={v.title}
+                      className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                        <span className="text-xl text-slate-800">▶️</span>
+                      </div>
+                    </div>
+                  </>
                 ) : (
-                  <div>{ready ? 'No thumbnail' : 'Processing…'}</div>
+                  <div className="text-center">
+                    <div className="text-2xl mb-2">
+                      {ready ? '🎬' : '⏳'}
+                    </div>
+                    <div>{ready ? 'No thumbnail' : 'Processing…'}</div>
+                  </div>
+                )}
+                
+                {/* Status indicator */}
+                <div className="absolute top-2 right-2">
+                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                    ready ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                  }`}>
+                    {ready ? '✓ Ready' : '⏳ Processing'}
+                  </span>
+                </div>
+                
+                {/* Privacy indicator */}
+                {v.is_private && (
+                  <div className="absolute top-2 left-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-slate-700/80 text-slate-300 border border-slate-600">
+                      🔒 Private
+                    </span>
+                  </div>
                 )}
               </div>
 
-              <div className="font-semibold truncate" title={v.title}>{v.title}</div>
-              <div className="text-xs text-slate-400 flex gap-2 items-center mb-3 mt-1">
-                <span>{v.category || 'Uncategorized'}</span>
-                <span className={ready ? 'badge-success' : 'badge-warn'}>{v.status}</span>
+              <div className="space-y-2">
+                <h4 className="font-semibold text-slate-200 line-clamp-2 leading-tight" title={v.title}>
+                  {v.title}
+                </h4>
+                <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <span>📂</span>
+                    <span className="capitalize">{v.category || 'Uncategorized'}</span>
+                  </span>
+                  {canDelete && (
+                    <span className="flex items-center gap-1 text-indigo-400">
+                      <span>👤</span>
+                      <span>Your video</span>
+                    </span>
+                  )}
+                </div>
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 mt-4">
                 <button 
                   disabled={!ready || isDeleting} 
                   onClick={() => ready && onPlay(v.upload_id)} 
-                  className={!ready || isDeleting ? 'btn-muted w-full' : 'btn-primary w-full'}
+                  className={`flex-1 transition-all duration-200 ${
+                    !ready || isDeleting 
+                      ? 'btn-muted cursor-not-allowed' 
+                      : 'btn-primary hover:shadow-lg hover:scale-[1.02]'
+                  }`}
                 >
-                  {ready ? 'Play' : 'Processing'}
+                  <div className="flex items-center justify-center gap-2">
+                    <span>{ready ? '▶️' : '⏳'}</span>
+                    <span>{ready ? 'Play' : 'Processing'}</span>
+                  </div>
                 </button>
                 {canDelete && (
                   <button 
                     disabled={isDeleting}
                     onClick={() => deleteVideo(v.id)} 
-                    className="btn-danger px-3"
+                    className={`px-3 transition-all duration-200 ${
+                      isDeleting 
+                        ? 'btn-muted cursor-not-allowed' 
+                        : 'bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 hover:text-rose-200 border border-rose-500/30 hover:border-rose-400/50 rounded-lg'
+                    }`}
                     title="Delete video"
                   >
-                    {isDeleting ? 'Deleting…' : 'Delete'}
+                    {isDeleting ? '⏳' : '🗑️'}
                   </button>
                 )}
               </div>

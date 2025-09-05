@@ -34,7 +34,7 @@ export default function UploadForm({ onUploaded, jwt }) {
       fd.append('title', title);
       fd.append('description', description);
       fd.append('tags', tags);
-  fd.append('category', category || 'other');
+      fd.append('category', category || 'other');
       fd.append('isPrivate', isPrivate);
       const r = await fetch(window.runtimeConfig.VITE_API_UPLOAD, {
         method: 'POST',
@@ -46,7 +46,7 @@ export default function UploadForm({ onUploaded, jwt }) {
       onUploaded(data.uploadId);
       setSuccess('Video uploaded successfully! Processing will begin shortly.');
       // reset fields (optional)
-  setTitle(''); setDescription(''); setTags(''); setCategory('other'); setIsPrivate(false); setFile(null);
+      setTitle(''); setDescription(''); setTags(''); setCategory('entertainment'); setIsPrivate(false); setFile(null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -55,27 +55,62 @@ export default function UploadForm({ onUploaded, jwt }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-200">Upload video</h2>
+    <form onSubmit={submit} className="space-y-6">
+      <div className="text-center mb-6">
+        <div className="text-3xl mb-2">🎬</div>
+        <h2 className="text-xl font-bold text-slate-200">Upload Your Video</h2>
+        <p className="text-sm text-slate-400 mt-1">Share your content with the world</p>
+      </div>
 
-      <label className="block">
-        <span className="block text-sm text-slate-300 mb-1">Video file</span>
-        <input type="file" accept="video/*" onChange={e=>setFile(e.target.files[0])}
-               className="file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white file:px-4 file:py-2 file:hover:bg-indigo-500
-                          text-slate-300 bg-slate-800/60 border border-white/10 rounded-xl w-full p-2" />
-      </label>
-
-      <div className="grid md:grid-cols-2 gap-3">
+      <div className="space-y-1">
         <label className="block">
-          <span className="block text-sm text-slate-300 mb-1">Title</span>
-          <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Title" className="input" />
+          <div className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <span>📁</span>
+            <span className="font-medium">Video file</span>
+            <span className="text-xs text-slate-500">(Max 100MB)</span>
+          </div>
+          <div className="relative">
+            <input 
+              type="file" 
+              accept="video/*" 
+              onChange={e=>setFile(e.target.files[0])}
+              className="file:mr-4 file:rounded-lg file:border-0 file:bg-gradient-to-r file:from-indigo-600 file:to-purple-600 file:text-white file:px-4 file:py-2 file:hover:from-indigo-500 file:hover:to-purple-500 file:transition-all file:duration-200
+                         text-slate-300 bg-slate-800/60 border border-white/10 rounded-xl w-full p-3 hover:border-white/20 transition-colors" 
+            />
+            {file && (
+              <div className="mt-2 text-xs text-green-400 flex items-center gap-1">
+                <span>✅</span>
+                <span>Selected: {file.name}</span>
+              </div>
+            )}
+          </div>
+        </label>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <label className="block">
+          <div className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <span>🏷️</span>
+            <span className="font-medium">Title</span>
+            <span className="text-red-400">*</span>
+          </div>
+          <input 
+            value={title} 
+            onChange={e=>setTitle(e.target.value)} 
+            placeholder="Enter video title" 
+            className="input hover:border-white/20 focus:border-indigo-400 transition-colors" 
+            required
+          />
         </label>
         <label className="block">
-          <span className="block text-sm text-slate-300 mb-1">Category</span>
+          <div className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+            <span>📂</span>
+            <span className="font-medium">Category</span>
+          </div>
           <select
             value={category}
             onChange={(e)=>setCategory(e.target.value)}
-            className="input"
+            className="input hover:border-white/20 focus:border-indigo-400 transition-colors"
           >
             {ALLOWED_CATEGORIES.map((c) => (
               <option key={c} value={c}>{c[0].toUpperCase() + c.slice(1)}</option>
@@ -85,25 +120,89 @@ export default function UploadForm({ onUploaded, jwt }) {
       </div>
 
       <label className="block">
-        <span className="block text-sm text-slate-300 mb-1">Description</span>
-        <textarea value={description} onChange={e=>setDescription(e.target.value)} placeholder="What’s inside?" className="textarea" />
+        <div className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+          <span>📝</span>
+          <span className="font-medium">Description</span>
+          <span className="text-xs text-slate-500">(Optional)</span>
+        </div>
+        <textarea 
+          value={description} 
+          onChange={e=>setDescription(e.target.value)} 
+          placeholder="Describe your video content..." 
+          className="textarea hover:border-white/20 focus:border-indigo-400 transition-colors min-h-[100px] resize-none" 
+          maxLength={500}
+        />
+        <div className="text-xs text-slate-500 mt-1 text-right">
+          {description.length}/500
+        </div>
       </label>
 
       <label className="block">
-        <span className="block text-sm text-slate-300 mb-1">Tags</span>
-        <input value={tags} onChange={e=>setTags(e.target.value)} placeholder="comma,separated,tags" className="input" />
+        <div className="flex items-center gap-2 text-sm text-slate-300 mb-2">
+          <span>🏷️</span>
+          <span className="font-medium">Tags</span>
+          <span className="text-xs text-slate-500">(Optional)</span>
+        </div>
+        <input 
+          value={tags} 
+          onChange={e=>setTags(e.target.value)} 
+          placeholder="fun, tutorial, gaming, music..." 
+          className="input hover:border-white/20 focus:border-indigo-400 transition-colors" 
+        />
+        <div className="text-xs text-slate-500 mt-1">Separate tags with commas</div>
       </label>
 
-      <label className="flex items-center gap-2 text-slate-300">
-        <input type="checkbox" className="check" checked={isPrivate} onChange={e=>setIsPrivate(e.target.checked)} />
-        Private
-      </label>
+      <div className="flex items-center justify-center p-4 border border-white/10 rounded-xl bg-slate-800/30">
+        <label className="flex items-center gap-3 cursor-pointer select-none">
+          <input 
+            type="checkbox" 
+            className="w-4 h-4 text-indigo-600 bg-slate-700 border-slate-600 rounded focus:ring-indigo-500 focus:ring-2" 
+            checked={isPrivate} 
+            onChange={e=>setIsPrivate(e.target.checked)} 
+          />
+          <div className="flex items-center gap-2">
+            <span>{isPrivate ? '🔒' : '🌍'}</span>
+            <div>
+              <div className="text-slate-300 font-medium">
+                {isPrivate ? 'Private video' : 'Public video'}
+              </div>
+              <div className="text-xs text-slate-500">
+                {isPrivate ? 'Only you can see this video' : 'Anyone can view this video'}
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
 
-      {error && <div className="text-rose-300 text-sm">{error}</div>}
-      {success && <div className="text-green-300 text-sm">{success}</div>}
+      {error && (
+        <div className="flex items-center gap-2 text-rose-300 p-3 bg-rose-900/20 border border-rose-500/20 rounded-lg">
+          <span>⚠️</span>
+          <span className="text-sm">{error}</span>
+        </div>
+      )}
+      
+      {success && (
+        <div className="flex items-center gap-2 text-green-300 p-3 bg-green-900/20 border border-green-500/20 rounded-lg">
+          <span>✅</span>
+          <span className="text-sm">{success}</span>
+        </div>
+      )}
 
-      <button disabled={busy} className={busy ? "btn-muted w-full" : "btn-primary w-full"}>
-        {busy ? 'Uploading…' : 'Upload'}
+      <button 
+        disabled={busy} 
+        className={`w-full transition-all duration-200 ${busy ? 'btn-muted' : 'btn-primary hover:shadow-lg hover:scale-[1.02]'}`}
+      >
+        {busy ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></div>
+            <span>Uploading…</span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2">
+            <span>🚀</span>
+            <span>Upload Video</span>
+          </div>
+        )}
       </button>
     </form>
   );

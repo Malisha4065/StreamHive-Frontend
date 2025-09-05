@@ -113,26 +113,53 @@ export default function Comments({ videoId, ownerId }) {
   }, [videoId, page, perPage]);
 
   return (
-    <div className="mt-4">
-      <div className="text-slate-200 font-semibold mb-2">Comments</div>
+    <div className="mt-6">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-xl">💬</span>
+        <h3 className="text-lg font-semibold text-slate-200">Comments</h3>
+        {total > 0 && (
+          <span className="text-xs bg-slate-700 text-slate-300 px-2 py-1 rounded-full">
+            {total}
+          </span>
+        )}
+      </div>
       {loading ? (
-        <div className="text-sm text-slate-400">Loading comments…</div>
+        <div className="flex items-center gap-2 text-slate-400 p-4 bg-slate-800/30 rounded-lg">
+          <div className="animate-spin w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full"></div>
+          <span className="text-sm">Loading comments…</span>
+        </div>
       ) : error ? (
-        <div className="text-sm text-rose-300">{error}</div>
+        <div className="flex items-center gap-2 text-rose-300 p-3 bg-rose-900/20 border border-rose-500/20 rounded-lg">
+          <span>⚠️</span>
+          <span className="text-sm">{error}</span>
+        </div>
       ) : (
-        <div className="space-y-3">
-          {comments.length === 0 && (
-            <div className="text-sm text-slate-400">No comments yet.</div>
+        <div className="space-y-4">{comments.length === 0 && (
+            <div className="text-center py-8 text-slate-400">
+              <div className="text-3xl mb-2">💭</div>
+              <div className="text-sm">No comments yet. Be the first to share your thoughts!</div>
+            </div>
           )}
           {comments.map(c => (
-            <div key={c.id} className="p-3 rounded-lg bg-slate-800/60 border border-white/10">
-              <div className="text-sm text-slate-200 whitespace-pre-wrap">{c.content}</div>
-              <div className="mt-1 text-xs text-slate-500 flex items-center gap-2">
-                <span>By {c.author_name || `User ${c.user_id}`}</span>
-                <span>•</span>
-                <span>{new Date(c.created_at).toLocaleString()}</span>
+            <div key={c.id} className="group p-4 rounded-xl bg-gradient-to-r from-slate-800/60 to-slate-800/40 border border-white/10 hover:border-white/20 transition-all duration-200 hover:shadow-lg">
+              <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mb-3">{c.content}</div>
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full grid place-items-center text-white font-bold text-xs">
+                    {(c.author_name || `User ${c.user_id}`)[0]?.toUpperCase()}
+                  </div>
+                  <span className="font-medium">{c.author_name || `User ${c.user_id}`}</span>
+                  <span className="text-slate-600">•</span>
+                  <span>{new Date(c.created_at).toLocaleDateString()} at {new Date(c.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</span>
+                </div>
                 {canDelete(c) && (
-                  <button onClick={() => remove(c.id)} className="ml-auto text-rose-300 hover:text-rose-200">Delete</button>
+                  <button 
+                    onClick={() => remove(c.id)} 
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-2 py-1 rounded-md text-rose-400 hover:text-rose-300 hover:bg-rose-900/20"
+                    title="Delete comment"
+                  >
+                    🗑️
+                  </button>
                 )}
               </div>
             </div>
@@ -140,29 +167,65 @@ export default function Comments({ videoId, ownerId }) {
         </div>
       )}
 
-      <form onSubmit={add} className="mt-3">
-        <textarea
-          className="textarea"
-          placeholder={isLoggedIn ? "Write a comment..." : "Login to comment"}
-          disabled={!isLoggedIn || busy}
-          value={content}
-          onChange={e => setContent(e.target.value)}
-        />
-        <div className="flex items-center justify-between mt-2">
-          <div className="text-xs text-slate-500">
+      <form onSubmit={add} className="mt-6 space-y-3">
+        <div className="relative">
+          <textarea
+            className="textarea min-h-[100px] pr-12 resize-none"
+            placeholder={isLoggedIn ? "✨ Share your thoughts..." : "🔐 Login to join the conversation"}
+            disabled={!isLoggedIn || busy}
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            maxLength={1000}
+          />
+          <div className="absolute bottom-2 right-2 text-xs text-slate-500">
+            {content.length}/1000
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 text-xs text-slate-500">
             {total > 0 && (
-              <>
+              <div className="flex items-center gap-1">
+                <span>📄</span>
                 <span>Page {page} of {totalPages}</span>
-                <span className="mx-2">•</span>
-                <span>{total} total</span>
-              </>
+                <span className="text-slate-600">•</span>
+                <span>{total} comments</span>
+              </div>
             )}
           </div>
+          
           <div className="flex items-center gap-2">
-            <button type="button" className="btn-ghost" disabled={!hasPrevPage || loading} onClick={() => setPage(p => Math.max(1, p-1))}>Prev</button>
-            <button type="button" className="btn-ghost" disabled={!hasNextPage || loading} onClick={() => setPage(p => p+1)}>Next</button>
-            <button disabled={!isLoggedIn || busy || !content.trim()} className={(!isLoggedIn || busy || !content.trim()) ? 'btn-muted' : 'btn-primary'}>
-            {busy ? 'Posting…' : 'Post Comment'}
+            <button 
+              type="button" 
+              className={`btn-ghost text-sm px-3 py-1 ${!hasPrevPage || loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-700'}`}
+              disabled={!hasPrevPage || loading} 
+              onClick={() => setPage(p => Math.max(1, p-1))}
+            >
+              ← Prev
+            </button>
+            <button 
+              type="button" 
+              className={`btn-ghost text-sm px-3 py-1 ${!hasNextPage || loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-700'}`}
+              disabled={!hasNextPage || loading} 
+              onClick={() => setPage(p => p+1)}
+            >
+              Next →
+            </button>
+            <button 
+              disabled={!isLoggedIn || busy || !content.trim()} 
+              className={`transition-all duration-200 ${(!isLoggedIn || busy || !content.trim()) ? 'btn-muted' : 'btn-primary hover:shadow-lg'}`}
+            >
+              {busy ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full"></div>
+                  <span>Posting…</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span>💬</span>
+                  <span>Post Comment</span>
+                </div>
+              )}
             </button>
           </div>
         </div>

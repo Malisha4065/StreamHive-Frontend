@@ -9,28 +9,30 @@ export default function Home({ onNavigateUpload, onNavigateLibrary }) {
   const [privateCount, setPrivateCount] = useState(null); // null=unknown, number=loaded
 
   return (
-    <div className="home-page p-4 md:p-6">
+    <div className="home-page p-4 md:p-6 space-y-8">
       {/* Header actions */}
-      <div className="flex justify-end items-center mb-6">
+      <div className="flex justify-end items-center">
         <div className="flex gap-3">
           <button
             onClick={onNavigateLibrary}
-            className="btn-ghost"
+            className="btn-ghost flex items-center gap-2"
           >
-            My Library
+            <span>📚</span>
+            <span>My Library</span>
           </button>
           <button
             onClick={onNavigateUpload}
-            className="btn-primary"
+            className="btn-primary flex items-center gap-2"
           >
-            ⬆ Upload Video
+            <span>⬆️</span>
+            <span>Upload Video</span>
           </button>
         </div>
       </div>
 
       {/* Main Video Player (only render when a video is selected) */}
       {selectedVideo && (
-        <div className="main-video-card card mb-6">
+        <div className="main-video-card card">
           <VideoPlayer uploadId={selectedVideo} />
         </div>
       )}
@@ -42,7 +44,7 @@ export default function Home({ onNavigateUpload, onNavigateLibrary }) {
 
       {/* Your Private Videos (visible only when logged in and there are items) */}
       {isLoggedIn && privateCount !== 0 && (
-        <div className="video-library card mt-6">
+        <div className="video-library card">
           <VideoList
             scope="mine"
             filterPrivateOnly
