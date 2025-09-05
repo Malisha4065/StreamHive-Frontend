@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export default function VideoList({ onPlay, scope = 'public' }) {
+export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly = false }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [debugInfo, setDebugInfo] = useState('Component initialized');
@@ -18,7 +18,8 @@ export default function VideoList({ onPlay, scope = 'public' }) {
       setDebugInfo(`Response: ${r.status} ${r.ok ? 'OK' : 'Error'}`);
       if (r.ok) {
         const data = await r.json();
-        setVideos(data.videos || []);
+        const list = Array.isArray(data.videos) ? data.videos : [];
+        setVideos(filterPrivateOnly ? list.filter(v => v.is_private === true) : list);
         setDebugInfo(`Loaded ${data.videos?.length || 0} videos`);
       } else {
         setDebugInfo(`API Error: ${r.status}`);
@@ -72,7 +73,7 @@ export default function VideoList({ onPlay, scope = 'public' }) {
   
   return (
     <div>
-      <div className="text-slate-200 font-semibold mb-3">{scope === 'mine' ? 'Your Library' : 'All Videos'}</div>
+      <div className="text-slate-200 font-semibold mb-3">{scope === 'mine' ? (filterPrivateOnly ? 'Your Private Videos' : 'Your Library') : 'All Videos'}</div>
       <div className="grid gap-4 md:grid-cols-3">
         {videos.map(v => {
           const ready = v.status === 'ready';

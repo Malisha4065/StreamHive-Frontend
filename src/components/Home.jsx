@@ -5,6 +5,7 @@ import "./home.css";
 
 export default function Home({ onNavigateUpload }) {
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const isLoggedIn = !!(window.runtimeConfig && window.runtimeConfig.VITE_JWT);
 
   return (
     <div className="home-page p-4 md:p-6">
@@ -19,21 +20,24 @@ export default function Home({ onNavigateUpload }) {
         </button>
       </div>
 
-      {/* Main Video Player */}
-      <div className="main-video-card card mb-6">
-        {selectedVideo ? (
+      {/* Main Video Player (only render when a video is selected) */}
+      {selectedVideo && (
+        <div className="main-video-card card mb-6">
           <VideoPlayer uploadId={selectedVideo} />
-        ) : (
-          <div className="flex justify-center items-center h-64 text-gray-500">
-            Select a video to play
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Video Library */}
+      {/* Public Videos */}
       <div className="video-library card">
         <VideoList scope="public" onPlay={(id) => setSelectedVideo(id)} />
       </div>
+
+      {/* Your Private Videos (visible only when logged in) */}
+      {isLoggedIn && (
+        <div className="video-library card mt-6">
+          <VideoList scope="mine" filterPrivateOnly onPlay={(id) => setSelectedVideo(id)} />
+        </div>
+      )}
     </div>
   );
 }
