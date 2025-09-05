@@ -124,13 +124,10 @@ export default function App() {
             onNavigateLibrary={() => setPage('library')}
           />
         ) : page === 'upload' ? (
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="card">
+          <div className="grid place-items-center">
+            <div className="card max-w-2xl w-full">
               <UploadForm onUploaded={setCurrentUploadId} jwt={jwt} />
               <StatusPoller uploadId={currentUploadId} onReady={setPlaybackId} />
-            </div>
-            <div className="card">
-              <VideoPlayer uploadId={playbackId} />
             </div>
           </div>
         ) : (

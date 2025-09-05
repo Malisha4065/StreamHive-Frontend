@@ -20,11 +20,13 @@ export default function UploadForm({ onUploaded, jwt }) {
   const [isPrivate, setIsPrivate] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const submit = async (e) => {
     e.preventDefault();
     if (!file) { setError('Select a file'); return; }
     setError('');
+    setSuccess('');
     setBusy(true);
     try {
       const fd = new FormData();
@@ -42,6 +44,7 @@ export default function UploadForm({ onUploaded, jwt }) {
       if (!r.ok) throw new Error('Upload failed');
       const data = await r.json();
       onUploaded(data.uploadId);
+      setSuccess('Video uploaded successfully! Processing will begin shortly.');
       // reset fields (optional)
   setTitle(''); setDescription(''); setTags(''); setCategory('other'); setIsPrivate(false); setFile(null);
     } catch (err) {
@@ -97,6 +100,7 @@ export default function UploadForm({ onUploaded, jwt }) {
       </label>
 
       {error && <div className="text-rose-300 text-sm">{error}</div>}
+      {success && <div className="text-green-300 text-sm">{success}</div>}
 
       <button disabled={busy} className={busy ? "btn-muted w-full" : "btn-primary w-full"}>
         {busy ? 'Uploading…' : 'Upload'}

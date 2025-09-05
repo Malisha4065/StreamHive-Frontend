@@ -35,6 +35,12 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
     }
   };
 
+  // Check if current user owns the video
+  const canDeleteVideo = (video) => {
+    const userId = window.runtimeConfig?.userId || (()=>{ try { return parseInt(localStorage.getItem('userId')||''); } catch { return null; } })();
+    return userId && video.user_id === userId;
+  };
+
   const deleteVideo = async (videoId) => {
     if (!window.confirm('Delete this video permanently?')) return;
     setDeleting(prev => new Set(prev.add(videoId)));
@@ -82,6 +88,7 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
         {videos.map(v => {
           const ready = v.status === 'ready';
           const isDeleting = deleting.has(v.id);
+          const canDelete = canDeleteVideo(v);
           const thumbnailEndpoint = `${window.runtimeConfig.VITE_API_PLAYBACK}/playback/videos/${v.upload_id}/thumbnail.jpg`;
 
           return (
@@ -122,14 +129,16 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
                 >
                   {ready ? 'Play' : 'Processing'}
                 </button>
-                <button 
-                  disabled={isDeleting}
-                  onClick={() => deleteVideo(v.id)} 
-                  className="btn-danger px-3"
-                  title="Delete video"
-                >
-                  {isDeleting ? 'Deleting…' : 'Delete'}
-                </button>
+                {canDelete && (
+                  <button 
+                    disabled={isDeleting}
+                    onClick={() => deleteVideo(v.id)} 
+                    className="btn-danger px-3"
+                    title="Delete video"
+                  >
+                    {isDeleting ? 'Deleting…' : 'Delete'}
+                  </button>
+                )}
               </div>
             </div>
           );

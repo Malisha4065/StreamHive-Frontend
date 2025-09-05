@@ -11,8 +11,7 @@ export default function Home({ onNavigateUpload, onNavigateLibrary }) {
   return (
     <div className="home-page p-4 md:p-6">
       {/* Header actions */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">All Videos</h2>
+      <div className="flex justify-end items-center mb-6">
         <div className="flex gap-3">
           <button
             onClick={onNavigateLibrary}

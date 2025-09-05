@@ -14,6 +14,10 @@ export default function Comments({ videoId, ownerId }) {
   const userId = window.runtimeConfig?.userId || (()=>{ try { return parseInt(localStorage.getItem('userId')||''); } catch { return ''; } })();
   const isLoggedIn = !!userId;
 
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+
   const canDelete = useMemo(() => (c) => {
     // Permission based on IDs; display uses author_name
     return isLoggedIn && (String(c.user_id) === String(userId) || String(ownerId) === String(userId));
@@ -69,6 +73,7 @@ export default function Comments({ videoId, ownerId }) {
       setContent('');
       // Reload first page to show newest first
       setPage(1);
+      await load(); // Immediately reload comments to show the new one
     } catch (e) {
       setError(e.message);
     } finally { setBusy(false); }
@@ -95,6 +100,17 @@ export default function Comments({ videoId, ownerId }) {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [videoId, page, perPage]);
+
+  // Periodic refresh to show updates from other users
+  useEffect(() => {
+    if (!videoId) return;
+    
+    const intervalId = setInterval(() => {
+      load();
+    }, 10000); // Refresh every 10 seconds
+    
+    return () => clearInterval(intervalId);
+  }, [videoId, page, perPage]);
 
   return (
     <div className="mt-4">
@@ -136,15 +152,15 @@ export default function Comments({ videoId, ownerId }) {
           <div className="text-xs text-slate-500">
             {total > 0 && (
               <>
-                <span>Page {page} of {Math.max(1, Math.ceil(total / perPage))}</span>
+                <span>Page {page} of {totalPages}</span>
                 <span className="mx-2">•</span>
                 <span>{total} total</span>
               </>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" className="btn-ghost" disabled={page <= 1 || loading} onClick={() => setPage(p => Math.max(1, p-1))}>Prev</button>
-            <button type="button" className="btn-ghost" disabled={comments.length < perPage || loading} onClick={() => setPage(p => p+1)}>Next</button>
+            <button type="button" className="btn-ghost" disabled={!hasPrevPage || loading} onClick={() => setPage(p => Math.max(1, p-1))}>Prev</button>
+            <button type="button" className="btn-ghost" disabled={!hasNextPage || loading} onClick={() => setPage(p => p+1)}>Next</button>
             <button disabled={!isLoggedIn || busy || !content.trim()} className={(!isLoggedIn || busy || !content.trim()) ? 'btn-muted' : 'btn-primary'}>
             {busy ? 'Posting…' : 'Post Comment'}
             </button>
