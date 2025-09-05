@@ -137,7 +137,7 @@ export default function App() {
 
             {/* Video Library */}
             <div className="card">
-              <VideoList onPlay={setPlaybackId} />
+              <VideoList scope="mine" onPlay={setPlaybackId} />
             </div>
           </>
         )}

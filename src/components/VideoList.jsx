@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export default function VideoList({ onPlay }) {
+export default function VideoList({ onPlay, scope = 'public' }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [debugInfo, setDebugInfo] = useState('Component initialized');
@@ -8,12 +8,12 @@ export default function VideoList({ onPlay }) {
 
   const loadVideos = async () => {
     try {
-      // Prefer fetching the current user's library to include private videos
-      const userId = window.runtimeConfig?.userId || (()=>{ try { return parseInt(localStorage.getItem('userId')||''); } catch { return ''; } })();
-      const endpoint = userId ? `${window.runtimeConfig.VITE_API_CATALOG}/users/${userId}/videos?page=1` : `${window.runtimeConfig.VITE_API_CATALOG}/videos?page=1`;
+  const userId = window.runtimeConfig?.userId || (()=>{ try { return parseInt(localStorage.getItem('userId')||''); } catch { return ''; } })();
+  const useMine = scope === 'mine' && userId;
+  const endpoint = useMine ? `${window.runtimeConfig.VITE_API_CATALOG}/users/${userId}/videos?page=1` : `${window.runtimeConfig.VITE_API_CATALOG}/videos?page=1`;
       setDebugInfo(`Fetching from: ${endpoint} (userId=${userId||'anon'})`);
       const headers = {};
-      if (userId) headers['X-User-ID'] = String(userId);
+  if (useMine) headers['X-User-ID'] = String(userId);
       const r = await fetch(endpoint, { headers });
       setDebugInfo(`Response: ${r.status} ${r.ok ? 'OK' : 'Error'}`);
       if (r.ok) {
@@ -72,7 +72,7 @@ export default function VideoList({ onPlay }) {
   
   return (
     <div>
-      <div className="text-slate-200 font-semibold mb-3">Your Library</div>
+      <div className="text-slate-200 font-semibold mb-3">{scope === 'mine' ? 'Your Library' : 'All Videos'}</div>
       <div className="grid gap-4 md:grid-cols-3">
         {videos.map(v => {
           const ready = v.status === 'ready';

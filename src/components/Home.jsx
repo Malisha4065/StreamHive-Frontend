@@ -32,7 +32,7 @@ export default function Home({ onNavigateUpload }) {
 
       {/* Video Library */}
       <div className="video-library card">
-        <VideoList onPlay={(id) => setSelectedVideo(id)} />
+        <VideoList scope="public" onPlay={(id) => setSelectedVideo(id)} />
       </div>
     </div>
   );
