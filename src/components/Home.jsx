@@ -6,6 +6,7 @@ import "./home.css";
 export default function Home({ onNavigateUpload }) {
   const [selectedVideo, setSelectedVideo] = useState(null);
   const isLoggedIn = !!(window.runtimeConfig && window.runtimeConfig.VITE_JWT);
+  const [privateCount, setPrivateCount] = useState(null); // null=unknown, number=loaded
 
   return (
     <div className="home-page p-4 md:p-6">
@@ -32,10 +33,15 @@ export default function Home({ onNavigateUpload }) {
         <VideoList scope="public" onPlay={(id) => setSelectedVideo(id)} />
       </div>
 
-      {/* Your Private Videos (visible only when logged in) */}
-      {isLoggedIn && (
+      {/* Your Private Videos (visible only when logged in and there are items) */}
+      {isLoggedIn && privateCount !== 0 && (
         <div className="video-library card mt-6">
-          <VideoList scope="mine" filterPrivateOnly onPlay={(id) => setSelectedVideo(id)} />
+          <VideoList
+            scope="mine"
+            filterPrivateOnly
+            onPlay={(id) => setSelectedVideo(id)}
+            onLoaded={(n) => setPrivateCount(n)}
+          />
         </div>
       )}
     </div>

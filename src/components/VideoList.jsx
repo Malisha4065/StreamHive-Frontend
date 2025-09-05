@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly = false }) {
+export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly = false, onLoaded }) {
   const [videos, setVideos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [debugInfo, setDebugInfo] = useState('Component initialized');
@@ -19,13 +19,17 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
       if (r.ok) {
         const data = await r.json();
         const list = Array.isArray(data.videos) ? data.videos : [];
-        setVideos(filterPrivateOnly ? list.filter(v => v.is_private === true) : list);
+        const filtered = filterPrivateOnly ? list.filter(v => v.is_private === true) : list;
+        setVideos(filtered);
+        if (typeof onLoaded === 'function') onLoaded(filtered.length);
         setDebugInfo(`Loaded ${data.videos?.length || 0} videos`);
       } else {
         setDebugInfo(`API Error: ${r.status}`);
+        if (typeof onLoaded === 'function') onLoaded(0);
       }
     } catch (error) {
       setDebugInfo(`Fetch Error: ${error.message}`);
+      if (typeof onLoaded === 'function') onLoaded(0);
     } finally { 
       setLoading(false); 
     }
