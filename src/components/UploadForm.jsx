@@ -36,9 +36,25 @@ export default function UploadForm({ onUploaded, jwt }) {
       fd.append('tags', tags);
       fd.append('category', category || 'other');
       fd.append('isPrivate', isPrivate);
+      // Provide user identity so backend can store proper owner name
+      const runtime = window.runtimeConfig || {};
+      const displayName = runtime.username || (typeof localStorage !== 'undefined' ? (localStorage.getItem('username') || '') : '');
+      const userIdStr = runtime.userId != null ? String(runtime.userId) : (typeof localStorage !== 'undefined' ? (localStorage.getItem('userId') || '') : '');
+      if (displayName) {
+        fd.append('owner_name', displayName);
+        fd.append('username', displayName);
+        fd.append('author_name', displayName);
+      }
+      if (userIdStr) {
+        fd.append('user_id', userIdStr);
+      }
+      const headers = { Authorization: 'Bearer ' + jwt };
+      if (userIdStr) headers['X-User-ID'] = userIdStr;
+      if (displayName) headers['X-User-Name'] = displayName;
+
       const r = await fetch(window.runtimeConfig.VITE_API_UPLOAD, {
         method: 'POST',
-        headers: { Authorization: 'Bearer ' + jwt },
+        headers,
         body: fd
       });
       if (!r.ok) throw new Error('Upload failed');
@@ -163,10 +179,10 @@ export default function UploadForm({ onUploaded, jwt }) {
           <div className="flex items-center gap-2">
             <div>
               <div className="text-slate-300 font-medium">
-                'Private Video'
+                Private Video
               </div>
               <div className="text-xs text-slate-500">
-                'Only you can see this video'
+                Only you can see this video
               </div>
             </div>
           </div>

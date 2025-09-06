@@ -46,6 +46,27 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
     return null;
   };
 
+  // Format an owner display name: prefer provided name; prettify emails; fallback to User {id}
+  const prettifyName = (raw) => {
+    if (!raw || typeof raw !== 'string') return null;
+    const s = String(raw).trim();
+    // If looks like an email, take the local part
+    const atIdx = s.indexOf('@');
+    const base = atIdx > 0 ? s.slice(0, atIdx) : s;
+    // Replace separators with spaces and title-case
+    const words = base.replace(/[._-]+/g, ' ').split(' ').filter(Boolean);
+    const titled = words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return titled || s;
+  };
+
+  const getOwnerName = (video) => {
+    const raw = video.owner_name || video.username || video.owner || null;
+    const pretty = prettifyName(raw);
+    if (pretty) return { display: pretty, tooltip: raw };
+    if (video.user_id != null) return { display: `User ${video.user_id}`, tooltip: `User ${video.user_id}` };
+    return { display: 'Unknown', tooltip: 'Unknown owner' };
+  };
+
   // Check if current user owns the video
   const canDeleteVideo = (video) => {
     const uid = getUserId();
@@ -198,10 +219,12 @@ export default function VideoList({ onPlay, scope = 'public', filterPrivateOnly 
                     <span>📂</span>
                     <span className="capitalize">{v.category || 'Uncategorized'}</span>
                   </span>
-                  <span className="flex items-center gap-1">
-                    <span>👤</span>
-                    <span>{v.username || v.owner_name || `User ${v.user_id}`}</span>
-                  </span>
+                  {(() => { const owner = getOwnerName(v); return (
+                    <span className="flex items-center gap-1 min-w-0" title={owner.tooltip || owner.display}>
+                      <span>👤</span>
+                      <span className="truncate max-w-[10rem]">{owner.display}</span>
+                    </span>
+                  ); })()}
                   {canDelete && (
                     <span className="flex items-center gap-1 text-indigo-400">
                       <span>👤</span>
